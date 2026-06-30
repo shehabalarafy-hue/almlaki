@@ -18,7 +18,10 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
 
   if (!isUnauthorized) return;
 
-  window.location.href = getLoginUrl();
+  const loginUrl = getLoginUrl();
+  if (loginUrl && loginUrl !== "#") {
+    window.location.href = loginUrl;
+  }
 };
 
 queryClient.getQueryCache().subscribe(event => {
@@ -37,10 +40,23 @@ queryClient.getMutationCache().subscribe(event => {
   }
 });
 
+// Safe API URL construction
+const getApiUrl = (): string => {
+  try {
+    // In production on Vercel, use relative path to same origin
+    if (typeof window !== "undefined" && window.location.hostname) {
+      return "/api/trpc";
+    }
+  } catch {
+    // Fallback if window is not available
+  }
+  return "/api/trpc";
+};
+
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: "/api/trpc",
+      url: getApiUrl(),
       transformer: superjson,
       headers() {
         // Preview auto-login fallback: when the browser blocks iframe cookies
@@ -72,10 +88,15 @@ const trpcClient = trpc.createClient({
   ],
 });
 
-createRoot(document.getElementById("root")!).render(
-  <trpc.Provider client={trpcClient} queryClient={queryClient}>
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
-  </trpc.Provider>
-);
+const rootElement = document.getElementById("root");
+if (!rootElement) {
+  console.error("[App] Root element not found. Cannot mount React application.");
+} else {
+  createRoot(rootElement).render(
+    <trpc.Provider client={trpcClient} queryClient={queryClient}>
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
+    </trpc.Provider>
+  );
+}
