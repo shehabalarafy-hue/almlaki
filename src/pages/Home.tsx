@@ -44,7 +44,7 @@ export default function Home() {
       id: "everest",
       name: "الملكي برميوم",
       description: "الاشتراك الأفضل",
-      logo: "/almalki-logo.jpg",
+      logo: "/almalki.jpg",
       featured: true,
       packages: [
         { duration: "3 أشهر", price: 80 },
@@ -56,7 +56,7 @@ export default function Home() {
       id: "strong",
       name: "كنج 4K",
       description: "جودة عالية جداً",
-      logo: "/almalki-logo.jpg",
+      logo: "/almalki.jpg",
       packages: [
         { duration: "شهر واحد", price: 70 },
         { duration: "3 أشهر", price: 180 },
@@ -101,7 +101,7 @@ export default function Home() {
       id: "smarters",
       name: "سيرفر الفا",
       description: "تطبيق موثوق",
-      logo: "/alfa.jpg",
+      logo: "/almalki.jpg",
       packages: [
         { duration: "3 أشهر", price: 70 },
         { duration: "6 أشهر", price: 100 },
