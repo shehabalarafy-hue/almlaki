@@ -68,7 +68,7 @@ export default function Home() {
       id: "hulk",
       name: "هولك IPTV",
       description: "قوي وموثوق",
-      logo: "/hulk-player.jpg",
+      logo: "/hulk.jpg",
       packages: [
         { duration: "3 أشهر", price: 100 },
         { duration: "6 أشهر", price: 150 },
@@ -79,7 +79,7 @@ export default function Home() {
       id: "falcon",
       name: "فالكون IPTV",
       description: "الاشتراك العصري",
-      logo: "/falcon-iptv.jpg",
+      logo: "/falcon.jpg",
       packages: [
         { duration: "3 أشهر", price: 130 },
         { duration: "6 أشهر", price: 200 },
@@ -90,7 +90,7 @@ export default function Home() {
       id: "vulture",
       name: "فولتشر IPTV",
       description: "الترفيهي المتميز",
-      logo: "/vulture-vip.jpg",
+      logo: "/vulture.jpg",
       packages: [
         { duration: "3 أشهر", price: 69 },
         { duration: "6 أشهر", price: 99 },
@@ -101,7 +101,7 @@ export default function Home() {
       id: "smarters",
       name: "سيرفر الفا",
       description: "تطبيق موثوق",
-      logo: "/alfa-tv.jpg",
+      logo: "/alfa.jpg",
       packages: [
         { duration: "3 أشهر", price: 70 },
         { duration: "6 أشهر", price: 100 },
