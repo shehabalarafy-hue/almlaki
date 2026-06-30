@@ -60,3 +60,5 @@ ehthumbs.db
 # Misc
 .cache/
 .turbo/
+.project-config.json
+client/public/__manus__/
