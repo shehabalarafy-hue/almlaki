@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -103,6 +101,20 @@ export default function SubscriptionForm({ onClose }: SubscriptionFormProps) {
     return true;
   };
 
+  const redirectToWhatsApp = (packageName: string, duration: string, deviceLabel: string) => {
+    // Generate WhatsApp message with new format
+    const whatsappMessage = `مرحباً Almalki ultra، أود الاشتراك في الباقة التالية:
+
+🔹 السيرفر: ${packageName}
+⏱️ المدة: ${duration}
+💰 السعر: ${formData.package === "strong4k" ? durations.find(d => d.id === formData.duration)?.price : packages.find(p => p.id === formData.package)?.price} ريال
+
+يرجي ارسال طريقة الدفع لتفعيل الاشتراك.`;
+
+    const encodedMessage = encodeURIComponent(whatsappMessage);
+    window.location.href = `https://wa.me/966594150534?text=${encodedMessage}`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -119,31 +131,36 @@ export default function SubscriptionForm({ onClose }: SubscriptionFormProps) {
 
       if (!selectedPackage || !selectedDuration || !selectedDevice) {
         toast.error("يرجى اختيار باقة ومدة وجهاز صحيحة");
+        setLoading(false);
         return;
       }
 
-      // إرسال البيانات عبر tRPC
-      await createSubscription.mutateAsync({
-        fullName: formData.fullName,
-        email: formData.email,
-        phone: formData.phone,
-        packageName: selectedPackage.name,
-        duration: selectedDuration.label,
-        price: formData.package === "strong4k" ? selectedDuration.price : selectedPackage.price,
-        deviceType: formData.deviceType as "android" | "apple" | "smarttv",
-      });
+      // Try to send data to backend
+      try {
+        await createSubscription.mutateAsync({
+          fullName: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+          packageName: selectedPackage.name,
+          duration: selectedDuration.label,
+          price: formData.package === "strong4k" ? selectedDuration.price : selectedPackage.price,
+          deviceType: formData.deviceType as "android" | "apple" | "smarttv",
+        });
+        console.log("[Subscription] Data saved successfully");
+      } catch (dbError) {
+        // If database fails, continue to WhatsApp anyway
+        console.warn("[Subscription] Database save failed, continuing to WhatsApp:", dbError);
+      }
 
       setSubmitted(true);
       toast.success("تم استقبال طلبك بنجاح! سيتم توجيهك للواتساب");
 
       // تحويل تلقائي للواتساب بعد ثانيتين
       setTimeout(() => {
-        const whatsappMessage = `مرحباً، أنا ${formData.fullName}\nأريد الاشتراك في باقة ${selectedPackage.name}\nللمدة: ${selectedDuration.label}\nنوع الجهاز: ${selectedDevice.label}\nرقم الهاتف: ${formData.phone}\nالبريد الإلكتروني: ${formData.email}`;
-        const encodedMessage = encodeURIComponent(whatsappMessage);
-        window.location.href = `https://wa.me/966594150534?text=${encodedMessage}`;
+        redirectToWhatsApp(selectedPackage.name, selectedDuration.label, selectedDevice.label);
       }, 2000);
 
-      // إعادة تعيين النموذج بعد 3 ثواني
+      // إعادة تعيين النموذج بعد 5 ثواني
       setTimeout(() => {
         setFormData({
           fullName: "",
@@ -154,10 +171,22 @@ export default function SubscriptionForm({ onClose }: SubscriptionFormProps) {
           deviceType: "",
         });
         setSubmitted(false);
-      }, 3000);
+      }, 5000);
     } catch (error) {
-      console.error("Subscription error:", error);
-      toast.error("حدث خطأ في إرسال الطلب. يرجى المحاولة مرة أخرى");
+      console.error("[Subscription] Error:", error);
+      // Even if there's an error, show success message and redirect to WhatsApp
+      toast.success("سيتم توجيهك للواتساب الآن");
+      
+      const selectedPackage = packages.find((p) => p.id === formData.package);
+      const selectedDuration = durations.find((d) => d.id === formData.duration);
+      const selectedDevice = deviceTypes.find((d) => d.id === formData.deviceType);
+
+      if (selectedPackage && selectedDuration && selectedDevice) {
+        setSubmitted(true);
+        setTimeout(() => {
+          redirectToWhatsApp(selectedPackage.name, selectedDuration.label, selectedDevice.label);
+        }, 1000);
+      }
     } finally {
       setLoading(false);
     }
@@ -167,8 +196,6 @@ export default function SubscriptionForm({ onClose }: SubscriptionFormProps) {
     const selectedPackage = packages.find((p) => p.id === formData.package);
     const selectedDuration = durations.find((d) => d.id === formData.duration);
     const selectedDevice = deviceTypes.find((d) => d.id === formData.deviceType);
-    const whatsappMessage = `مرحباً، أنا ${formData.fullName}\nأريد الاشتراك في باقة ${selectedPackage?.name}\nللمدة: ${selectedDuration?.label}\nنوع الجهاز: ${selectedDevice?.label}\nرقم الهاتف: ${formData.phone}\nالبريد الإلكتروني: ${formData.email}`;
-    const encodedMessage = encodeURIComponent(whatsappMessage);
 
     return (
       <Card className="bg-card border-border p-8 text-center">
@@ -183,17 +210,19 @@ export default function SubscriptionForm({ onClose }: SubscriptionFormProps) {
         </p>
 
         {/* رابط الواتس آب البديل */}
-        <a
-          href={`https://wa.me/966594150534?text=${encodedMessage}`}
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          onClick={() => {
+            if (selectedPackage && selectedDuration && selectedDevice) {
+              redirectToWhatsApp(selectedPackage.name, selectedDuration.label, selectedDevice.label);
+            }
+          }}
           className="inline-block"
         >
           <Button className="bg-accent text-accent-foreground hover:bg-accent/90 text-lg px-8 py-6 rounded-lg shadow-lg hover:shadow-2xl transition-all">
             <MessageCircle className="mr-2" size={20} />
             الانتقال للواتساب الآن
           </Button>
-        </a>
+        </button>
 
         <div className="mt-6 p-4 bg-accent/10 border border-accent/20 rounded-lg text-sm text-muted-foreground">
           ملء النموذج أدناه لطلب الاشتراك. سيتم توجيهك تلقائياً للواتساب لإرسال بيانات طلبك. جميع بيانات العملاء محمية وآمنة.
@@ -205,16 +234,16 @@ export default function SubscriptionForm({ onClose }: SubscriptionFormProps) {
   return (
     <Card className="bg-card border-border p-8">
       <h2 className="text-3xl font-bold text-foreground mb-2 text-center">
-        طلب اشتراك جديد
+        طلب الاشتراك
       </h2>
       <p className="text-muted-foreground text-center mb-8">
-        ملء النموذج أدناه لطلب الاشتراك، سيتم توجيهك للواتساب تلقائياً لإرسال بيانات طلبك.
+        ملء النموذج أدناه لطلب الاشتراك
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Full Name */}
+        {/* الاسم الكامل */}
         <div>
-          <Label htmlFor="fullName" className="text-foreground font-semibold mb-2 block">
+          <Label htmlFor="fullName" className="text-foreground mb-2 block">
             الاسم الكامل *
           </Label>
           <Input
@@ -223,14 +252,14 @@ export default function SubscriptionForm({ onClose }: SubscriptionFormProps) {
             placeholder="أدخل اسمك الكامل"
             value={formData.fullName}
             onChange={(e) => handleInputChange(e, "fullName")}
-            className="bg-background border-border text-foreground placeholder:text-muted-foreground"
+            className="bg-background border-border text-foreground placeholder-muted-foreground"
             dir="rtl"
           />
         </div>
 
-        {/* Email */}
+        {/* البريد الإلكتروني */}
         <div>
-          <Label htmlFor="email" className="text-foreground font-semibold mb-2 block">
+          <Label htmlFor="email" className="text-foreground mb-2 block">
             البريد الإلكتروني *
           </Label>
           <Input
@@ -239,38 +268,38 @@ export default function SubscriptionForm({ onClose }: SubscriptionFormProps) {
             placeholder="example@email.com"
             value={formData.email}
             onChange={(e) => handleInputChange(e, "email")}
-            className="bg-background border-border text-foreground placeholder:text-muted-foreground"
+            className="bg-background border-border text-foreground placeholder-muted-foreground"
           />
         </div>
 
-        {/* Phone */}
+        {/* رقم الهاتف */}
         <div>
-          <Label htmlFor="phone" className="text-foreground font-semibold mb-2 block">
+          <Label htmlFor="phone" className="text-foreground mb-2 block">
             رقم الهاتف *
           </Label>
           <Input
             id="phone"
             type="tel"
-            placeholder="+966 5XXXXXXXX"
+            placeholder="966501234567"
             value={formData.phone}
             onChange={(e) => handleInputChange(e, "phone")}
-            className="bg-background border-border text-foreground placeholder:text-muted-foreground"
+            className="bg-background border-border text-foreground placeholder-muted-foreground"
             dir="ltr"
           />
         </div>
 
-        {/* Package Selection */}
+        {/* اختيار الباقة */}
         <div>
-          <Label htmlFor="package" className="text-foreground font-semibold mb-2 block">
-            اختر الباقة *
+          <Label htmlFor="package" className="text-foreground mb-2 block">
+            الباقة *
           </Label>
           <Select value={formData.package} onValueChange={(value) => handleSelectChange("package", value)}>
             <SelectTrigger className="bg-background border-border text-foreground">
-              <SelectValue placeholder="اختر باقة الاشتراك" />
+              <SelectValue placeholder="اختر الباقة" />
             </SelectTrigger>
-            <SelectContent className="bg-card border-border">
+            <SelectContent>
               {packages.map((pkg) => (
-                <SelectItem key={pkg.id} value={pkg.id} className="text-foreground">
+                <SelectItem key={pkg.id} value={pkg.id}>
                   {pkg.name}
                 </SelectItem>
               ))}
@@ -278,18 +307,18 @@ export default function SubscriptionForm({ onClose }: SubscriptionFormProps) {
           </Select>
         </div>
 
-        {/* Duration Selection */}
+        {/* اختيار المدة */}
         <div>
-          <Label htmlFor="duration" className="text-foreground font-semibold mb-2 block">
+          <Label htmlFor="duration" className="text-foreground mb-2 block">
             مدة الاشتراك *
           </Label>
           <Select value={formData.duration} onValueChange={(value) => handleSelectChange("duration", value)}>
             <SelectTrigger className="bg-background border-border text-foreground">
-              <SelectValue placeholder="اختر مدة الاشتراك" />
+              <SelectValue placeholder="اختر المدة" />
             </SelectTrigger>
-            <SelectContent className="bg-card border-border">
+            <SelectContent>
               {durations.map((duration) => (
-                <SelectItem key={duration.id} value={duration.id} className="text-foreground">
+                <SelectItem key={duration.id} value={duration.id}>
                   {duration.label}
                 </SelectItem>
               ))}
@@ -297,18 +326,18 @@ export default function SubscriptionForm({ onClose }: SubscriptionFormProps) {
           </Select>
         </div>
 
-        {/* Device Type Selection */}
+        {/* اختيار نوع الجهاز */}
         <div>
-          <Label htmlFor="deviceType" className="text-foreground font-semibold mb-2 block">
+          <Label htmlFor="deviceType" className="text-foreground mb-2 block">
             نوع الجهاز *
           </Label>
           <Select value={formData.deviceType} onValueChange={(value) => handleSelectChange("deviceType", value)}>
             <SelectTrigger className="bg-background border-border text-foreground">
               <SelectValue placeholder="اختر نوع الجهاز" />
             </SelectTrigger>
-            <SelectContent className="bg-card border-border">
+            <SelectContent>
               {deviceTypes.map((device) => (
-                <SelectItem key={device.id} value={device.id} className="text-foreground">
+                <SelectItem key={device.id} value={device.id}>
                   {device.label}
                 </SelectItem>
               ))}
@@ -316,7 +345,7 @@ export default function SubscriptionForm({ onClose }: SubscriptionFormProps) {
           </Select>
         </div>
 
-        {/* Info Box */}
+        {/* رسالة التنبيه */}
         <div className="p-4 bg-accent/10 border border-accent/20 rounded-lg flex gap-3">
           <AlertCircle className="text-accent flex-shrink-0 mt-0.5" size={20} />
           <p className="text-sm text-muted-foreground">
@@ -324,13 +353,13 @@ export default function SubscriptionForm({ onClose }: SubscriptionFormProps) {
           </p>
         </div>
 
-        {/* Submit Button */}
+        {/* زر الإرسال */}
         <Button
           type="submit"
-          disabled={loading || createSubscription.isPending}
-          className="w-full bg-accent text-accent-foreground hover:bg-accent/90 text-lg py-6 rounded-lg shadow-lg hover:shadow-2xl transition-all disabled:opacity-50"
+          disabled={loading}
+          className="w-full bg-accent text-accent-foreground hover:bg-accent/90 text-lg py-6 rounded-lg shadow-lg hover:shadow-2xl transition-all"
         >
-          {loading || createSubscription.isPending ? "جاري الإرسال..." : "إرسال الطلب"}
+          {loading ? "جاري الإرسال..." : "إرسال الطلب"}
         </Button>
       </form>
     </Card>

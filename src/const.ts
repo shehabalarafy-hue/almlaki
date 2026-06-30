@@ -3,12 +3,13 @@ export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 // Generate login URL at runtime so redirect URI reflects the current origin.
 export const getLoginUrl = () => {
   // Use environment variables with safe fallbacks
+  // If these are not set, login will be disabled gracefully
   const oauthPortalUrl = import.meta.env.VITE_OAUTH_PORTAL_URL || "https://auth.manus.space";
   const appId = import.meta.env.VITE_APP_ID || "";
   
-  // If appId is missing, log warning and return safe fallback
+  // If appId is missing, return safe fallback
   if (!appId) {
-    console.warn("[Auth] VITE_APP_ID is not configured. Login may not work correctly.");
+    console.warn("[Auth] VITE_APP_ID is not configured. Login feature is disabled.");
     return "#";
   }
   

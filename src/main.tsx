@@ -40,16 +40,18 @@ queryClient.getMutationCache().subscribe(event => {
   }
 });
 
-// Safe API URL construction
+// Dynamic API URL - works on any domain/port
 const getApiUrl = (): string => {
   try {
-    // In production on Vercel, use relative path to same origin
-    if (typeof window !== "undefined" && window.location.hostname) {
+    if (typeof window !== "undefined" && window.location) {
+      // Use relative path to same origin - works everywhere
+      // /api/trpc will resolve to current domain
       return "/api/trpc";
     }
-  } catch {
-    // Fallback if window is not available
+  } catch (error) {
+    console.warn("[API] Error determining API URL:", error);
   }
+  // Fallback to relative path
   return "/api/trpc";
 };
 
