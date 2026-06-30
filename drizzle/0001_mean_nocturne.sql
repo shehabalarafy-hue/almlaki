@@ -1,0 +1,1 @@
+ALTER TABLE `subscriptionRequests` ADD `deviceType` enum('android','apple','smarttv') NOT NULL;
