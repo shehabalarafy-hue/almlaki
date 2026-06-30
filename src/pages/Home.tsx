@@ -44,7 +44,7 @@ export default function Home() {
       id: "everest",
       name: "الملكي برميوم",
       description: "الاشتراك الأفضل",
-      logo: "/manus-storage/almalki-logo_27904025.jpg",
+      logo: "/almalki-logo.jpg",
       featured: true,
       packages: [
         { duration: "3 أشهر", price: 80 },
@@ -56,7 +56,7 @@ export default function Home() {
       id: "strong",
       name: "كنج 4K",
       description: "جودة عالية جداً",
-      logo: "/manus-storage/almalki-logo_27904025.jpg",
+      logo: "/almalki-logo.jpg",
       packages: [
         { duration: "شهر واحد", price: 70 },
         { duration: "3 أشهر", price: 180 },
@@ -68,7 +68,7 @@ export default function Home() {
       id: "hulk",
       name: "هولك IPTV",
       description: "قوي وموثوق",
-      logo: "/manus-storage/almalki-logo_27904025.jpg",
+      logo: "/hulk-player.jpg",
       packages: [
         { duration: "3 أشهر", price: 100 },
         { duration: "6 أشهر", price: 150 },
@@ -79,7 +79,7 @@ export default function Home() {
       id: "falcon",
       name: "فالكون IPTV",
       description: "الاشتراك العصري",
-      logo: "/manus-storage/almalki-logo_27904025.jpg",
+      logo: "/falcon-iptv.jpg",
       packages: [
         { duration: "3 أشهر", price: 130 },
         { duration: "6 أشهر", price: 200 },
@@ -90,7 +90,7 @@ export default function Home() {
       id: "vulture",
       name: "فولتشر IPTV",
       description: "الترفيهي المتميز",
-      logo: "/manus-storage/almalki-logo_27904025.jpg",
+      logo: "/vulture-vip.jpg",
       packages: [
         { duration: "3 أشهر", price: 69 },
         { duration: "6 أشهر", price: 99 },
@@ -101,7 +101,7 @@ export default function Home() {
       id: "smarters",
       name: "سيرفر الفا",
       description: "تطبيق موثوق",
-      logo: "/manus-storage/almalki-logo_27904025.jpg",
+      logo: "/alfa-tv.jpg",
       packages: [
         { duration: "3 أشهر", price: 70 },
         { duration: "6 أشهر", price: 100 },
@@ -380,7 +380,7 @@ export default function Home() {
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <img
-                  src="/manus-storage/almalki-logo_27904025.jpg"
+                  src="/almalki-logo.jpg"
                   alt="Almalki Ultra"
                   className="h-8 w-8 rounded"
                 />
